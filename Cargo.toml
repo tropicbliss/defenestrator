@@ -1,0 +1,17 @@
+[package]
+name = "defenestrator"
+version = "0.1.0"
+edition = "2021"
+authors = ["tropicbliss <tropicbliss@protonmail.com>"]
+description = "Simple asynchronous and multithreaded Minecraft name availability checker"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0"
+futures = "0.3"
+lazy_static = "1.4"
+regex = "1.5"
+reqwest = { version = "0.11", default_features = false, features = ["rustls-tls"] }
+structopt = "0.3"
+tokio = { version = "1.12", features = ["fs", "macros", "rt-multi-thread"] }
