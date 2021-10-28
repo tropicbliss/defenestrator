@@ -8,8 +8,8 @@ use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = cli::Args::new();
-    let names = utils::get_names(args.path)?;
+    let args = cli::Opt::new();
+    let names = utils::get_names(args.input)?;
     let name_validity_data = utils::get_name_validity(&names);
     let available_names = executor::run(
         name_validity_data.valid_names,
