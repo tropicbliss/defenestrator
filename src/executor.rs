@@ -7,8 +7,8 @@ use std::io::{stdout, Write};
 
 pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<String>> {
     let client = Client::builder().build()?;
-    let before = Instant::now();
     let name_list_len = names.len();
+    let before = Instant::now();
     let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
             let url = format!("https://api.ashcon.app/mojang/v2/user/{}", name);
