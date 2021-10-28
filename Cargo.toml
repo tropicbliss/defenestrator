@@ -7,6 +7,7 @@ description = "Simple asynchronous and multithreaded Minecraft name availability
 
 [dependencies]
 anyhow = "1.0"
+console = "0.15"
 futures = "0.3"
 lazy_static = "1.4"
 regex = "1.5"
