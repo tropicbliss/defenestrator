@@ -25,7 +25,7 @@ pub fn get_name_validity(names: &[String]) -> NameValidityData {
 }
 
 fn is_invalid_predicate(name: &str) -> bool {
-    // Alphanumeric + underscore characters allowed
+    // Only alphanumeric + underscore characters allowed
     lazy_static! {
         static ref RE: Regex = Regex::new("[^a-zA-Z0-9_.]").unwrap();
     }
