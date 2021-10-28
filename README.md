@@ -1,1 +1,1 @@
-Simple asynchronous and multithreaded lock-free Minecraft name availability checker. Name checking on steroids.
+Simple asynchronous Minecraft name availability checker. Name checking on steroids.

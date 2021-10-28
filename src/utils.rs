@@ -8,14 +8,14 @@ pub fn get_names(path: PathBuf) -> Result<Vec<String>> {
     Ok(file.lines().map(ToString::to_string).collect())
 }
 
-pub fn get_name_validity(names: &[String]) -> NameValidityData {
+pub fn get_name_validity(names: Vec<String>) -> NameValidityData {
     let mut invalid_names = Vec::new();
     let mut valid_names = Vec::new();
     for name in names {
-        if is_invalid_predicate(name) {
-            invalid_names.push(name.to_string());
+        if is_invalid_predicate(&name) {
+            invalid_names.push(name);
         } else {
-            valid_names.push(name.to_string());
+            valid_names.push(name);
         }
     }
     NameValidityData {
