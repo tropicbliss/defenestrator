@@ -3,7 +3,7 @@ name = "defenestrator"
 version = "1.0.0"
 edition = "2021"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
-description = "Simple asynchronous and multithreaded Minecraft name availability checker"
+description = "Simple asynchronous Minecraft name availability checker"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

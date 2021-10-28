@@ -10,7 +10,7 @@ pub struct Opt {
     pub input: PathBuf,
 
     /// Set number of parallel requests
-    #[structopt(short, long, default_value = "8")]
+    #[structopt(short, long, default_value = "27")]
     pub parallel_requests: usize,
 }
 

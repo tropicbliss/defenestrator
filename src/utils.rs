@@ -5,7 +5,11 @@ use std::{fs::read_to_string, path::PathBuf, string::ToString};
 
 pub fn get_names(path: PathBuf) -> Result<Vec<String>> {
     let file = read_to_string(path)?;
-    Ok(file.lines().map(ToString::to_string).collect())
+    Ok(file
+        .lines()
+        .map(str::trim)
+        .map(ToString::to_string)
+        .collect())
 }
 
 pub fn get_name_validity(names: Vec<String>) -> NameValidityData {
