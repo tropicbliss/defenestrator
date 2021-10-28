@@ -13,8 +13,8 @@ pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<Str
     let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
             let url = format!("https://api.ashcon.app/mojang/v2/user/{}", name);
-            let client = &client;
-            async move {
+            let client = client.clone();
+            tokio::spawn(async move {
                 let resp = client.get(&url).send().await.expect("Got a reqwest::Error");
                 match resp.status().as_u16() {
                     200 => {
@@ -27,7 +27,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<Str
                     }
                     _ => panic!("HTTP {}", resp.status()),
                 }
-            }
+            })
         })
         // Limiting concurrency to prevent OS from running out of resources
         .buffer_unordered(parallel_requests)
@@ -47,6 +47,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<Str
     )?;
     let mut available_names = Vec::new();
     for body in bodies {
+        let body = body?;
         if let NameResult::Available(name) = body {
             available_names.push(name);
         }
