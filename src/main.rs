@@ -5,6 +5,7 @@ mod executor;
 mod utils;
 
 use anyhow::Result;
+use std::io::{stdout, Write};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -17,11 +18,12 @@ async fn main() -> Result<()> {
         args.timeout,
     )
     .await?;
-    println!();
-    println!("Available username(s): {:?}", available_names);
-    println!(
+    writeln!(stdout())?;
+    writeln!(stdout(), "Available username(s): {:?}", available_names)?;
+    writeln!(
+        stdout(),
         "Invalid username(s): {:?}",
         name_validity_data.invalid_names
-    );
+    )?;
     Ok(())
 }
