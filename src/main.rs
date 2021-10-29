@@ -16,10 +16,12 @@ async fn main() -> Result<()> {
         executor::run(name_validity_data.valid_names, args.parallel_requests).await?;
     writeln!(stdout())?;
     writeln!(stdout(), "Available username(s): {:?}", available_names)?;
-    writeln!(
-        stdout(),
-        "Invalid username(s): {:?}",
-        name_validity_data.invalid_names
-    )?;
+    if !name_validity_data.invalid_names.is_empty() {
+        writeln!(
+            stdout(),
+            "Invalid username(s): {:?}",
+            name_validity_data.invalid_names
+        )?;
+    }
     Ok(())
 }
