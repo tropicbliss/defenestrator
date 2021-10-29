@@ -15,6 +15,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<Str
     let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
             let url = format!("https://api.ashcon.app/mojang/v2/user/{}", name);
+            // Client has its own internal Arc impl so each clone is just cloning a reference to it
             let client = client.clone();
             tokio::spawn(async move {
                 let resp = client.get(&url).send().await.expect("Got a reqwest::Error");
