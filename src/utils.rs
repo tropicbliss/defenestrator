@@ -1,9 +1,9 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::{fs::read_to_string, path::PathBuf, string::ToString};
+use std::{fs::read_to_string, path::Path, string::ToString};
 
-pub fn get_names(path: PathBuf) -> Result<Vec<String>> {
+pub fn get_names(path: &Path) -> Result<Vec<String>> {
     let file = read_to_string(path)?;
     Ok(file
         .lines()
