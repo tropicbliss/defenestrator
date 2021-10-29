@@ -18,7 +18,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<Str
             // Client has its own internal Arc impl so each clone is just cloning a reference to it
             let client = client.clone();
             tokio::spawn(async move {
-                let resp = client.get(&url).send().await.expect("Got a reqwest::Error");
+                let resp = client.get(&url).send().await.expect("Error while sending request");
                 match resp.status().as_u16() {
                     200 => {
                         println!("{} was taken", style(name).yellow());
