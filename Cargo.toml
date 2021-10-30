@@ -16,5 +16,4 @@ structopt = "0.3"
 tokio = { version = "1.12", features = ["fs", "macros", "rt-multi-thread"] }
 
 [profile.release]
-lto = true
-codegen-units = 1
+lto = "fat"
