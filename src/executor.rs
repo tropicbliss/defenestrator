@@ -6,9 +6,12 @@ use anyhow::Result;
 use console::style;
 use futures::{stream, StreamExt};
 use reqwest::Client;
-use std::io::{stdout, Write};
+use std::{
+    io::{stdout, Write},
+    num::NonZeroUsize,
+};
 
-pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<String>> {
+pub async fn run(names: Vec<String>, parallel_requests: NonZeroUsize) -> Result<Vec<String>> {
     let client = Client::builder().build()?;
     let name_list_len = names.len();
     let before = Instant::now();
@@ -37,7 +40,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize) -> Result<Vec<Str
             })
         })
         // Limiting concurrency to prevent OS from running out of resources
-        .buffer_unordered(parallel_requests)
+        .buffer_unordered(usize::from(parallel_requests))
         .collect()
         .await;
     let elapsed = before.elapsed();
