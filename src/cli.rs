@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{num::NonZeroUsize, path::PathBuf};
 
 use structopt::StructOpt;
 
@@ -11,7 +11,7 @@ pub struct Opt {
 
     /// Set number of parallel requests
     #[structopt(short, long, default_value = "27")]
-    pub parallel_requests: usize,
+    pub parallel_requests: NonZeroUsize,
 }
 
 impl Opt {
