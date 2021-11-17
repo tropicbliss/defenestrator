@@ -39,7 +39,7 @@ pub async fn run(
                             if attempts > 3 {
                                 panic!("IP is getting rate limited after 3 attempts. Consider raising the timeout");
                             }
-                            println!("IP currently rate limited, waiting for {} seconds. Attempt(s): {}", timeout, attempts);
+                            println!("IP currently rate limited, waiting for {} seconds. Attempt: {}/3", timeout, attempts);
                             tokio::time::sleep(Duration::from_secs(timeout)).await;
                         }
                         _ => panic!("HTTP {}", resp.status()),
