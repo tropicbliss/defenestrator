@@ -24,6 +24,7 @@ pub async fn run(
         .map(|name| {
             // Client has its own internal Arc impl so each clone is just cloning a reference to it
             let client = client.clone();
+            // Makes sure rate limit msg appears once (a bit of overengineering I know but I wanna learn atomics)
             let show_ratelimit_msg = Arc::clone(&show_ratelimit_msg);
             tokio::spawn(async move {
                 let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", name);
