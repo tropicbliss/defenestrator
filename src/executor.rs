@@ -53,7 +53,6 @@ pub async fn run(
                             if show_ratelimit_msg.compare_exchange_weak(true, false, Ordering::Acquire, Ordering::Relaxed).is_ok() {
                                 println!("IP currently rate limited, waiting for {} seconds. Attempt: {}/3", timeout, attempts);
                                 tokio::time::sleep(Duration::from_secs(timeout)).await;
-                                // Not sure whether using store or CAS is better
                                 show_ratelimit_msg.store(true, Ordering::Release);
                             } else {
                                 tokio::time::sleep(Duration::from_secs(timeout)).await;
