@@ -1,7 +1,7 @@
 #![allow(clippy::cast_precision_loss)]
 
+use ansi_term::Colour::Yellow;
 use anyhow::Result;
-use console::style;
 use futures::{stream, StreamExt};
 use reqwest::Client;
 use std::{num::NonZeroUsize, time::Duration};
@@ -27,11 +27,11 @@ pub async fn run(
                         .expect("Error while sending request");
                     match resp.status().as_u16() {
                         200 => {
-                            println!("{} was taken", style(name).yellow());
+                            println!("{} was taken", Yellow.paint(name));
                             break NameResult::Taken;
                         }
                         204 => {
-                            println!("{} is available", style(&name).yellow());
+                            println!("{} is available", Yellow.paint(&name));
                             break NameResult::Available(name);
                         },
                         429 => {
