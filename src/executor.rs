@@ -4,7 +4,14 @@ use ansi_term::Colour::Yellow;
 use anyhow::Result;
 use futures::{stream, StreamExt};
 use reqwest::Client;
-use std::{num::NonZeroUsize, time::Duration};
+use std::{
+    num::NonZeroUsize,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time::Duration,
+};
 
 pub async fn run(
     names: Vec<String>,
@@ -12,10 +19,12 @@ pub async fn run(
     timeout: u64,
 ) -> Result<Vec<String>> {
     let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
+    let show_ratelimit_msg = Arc::new(AtomicBool::new(true));
     let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
             // Client has its own internal Arc impl so each clone is just cloning a reference to it
             let client = client.clone();
+            let show_ratelimit_msg = Arc::clone(&show_ratelimit_msg);
             tokio::spawn(async move {
                 let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", name);
                 let mut attempts = 0;
@@ -39,8 +48,16 @@ pub async fn run(
                             if attempts > 3 {
                                 panic!("IP is getting rate limited after 3 attempts. Consider raising the timeout");
                             }
-                            println!("IP currently rate limited, waiting for {} seconds. Attempt: {}/3", timeout, attempts);
-                            tokio::time::sleep(Duration::from_secs(timeout)).await;
+                            // If CAS succeeds, it will return Ok. If it fails, it will return Err.
+                            // In ARM, instead of CAS, we have LDREX (get exclusive access to a memory location and read it) and STREX (get exclusive access to a memory location and store the value, but has the possibility of failing if it is unable to get exclusive access). Since in our case, if a thread has exclusive access to the value, the other threads should be fine not attempting to store the value, we can use weak safely (among many other kinds of spurious errors). Plus, printing a rate limit msg is hardly mission critical.
+                            if show_ratelimit_msg.compare_exchange_weak(true, false, Ordering::Acquire, Ordering::Relaxed).is_ok() {
+                                println!("IP currently rate limited, waiting for {} seconds. Attempt: {}/3", timeout, attempts);
+                                tokio::time::sleep(Duration::from_secs(timeout)).await;
+                                // Not sure whether using store or CAS is better
+                                show_ratelimit_msg.store(true, Ordering::Release);
+                            } else {
+                                tokio::time::sleep(Duration::from_secs(timeout)).await;
+                            }
                         }
                         _ => panic!("HTTP {}", resp.status()),
                     };
