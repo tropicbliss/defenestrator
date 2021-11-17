@@ -14,10 +14,10 @@ pub async fn run(
     let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
     let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
-            let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", name);
             // Client has its own internal Arc impl so each clone is just cloning a reference to it
             let client = client.clone();
             tokio::spawn(async move {
+                let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", name);
                 let mut attempts = 0;
                 loop {
                     let resp = client
