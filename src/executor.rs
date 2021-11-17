@@ -53,11 +53,9 @@ pub async fn run(
                             // In ARM, instead of CAS, we have LDREX (get exclusive access to a memory location and read it) and STREX (get exclusive access to a memory location and store the value, but has the possibility of failing if it is unable to get exclusive access). Since in our case, if a thread has exclusive access to the value, the other threads should be fine not attempting to store the value, we can use weak safely (among many other kinds of spurious errors). Plus, printing a rate limit msg is hardly mission critical.
                             if show_ratelimit_msg.compare_exchange_weak(true, false, Ordering::Acquire, Ordering::Relaxed).is_ok() {
                                 println!("IP currently rate limited, waiting for {} seconds. Attempt: {}/3", timeout, attempts);
-                                tokio::time::sleep(Duration::from_secs(timeout)).await;
-                                show_ratelimit_msg.store(true, Ordering::Release);
-                            } else {
-                                tokio::time::sleep(Duration::from_secs(timeout)).await;
                             }
+                            tokio::time::sleep(Duration::from_secs(timeout)).await;
+                            show_ratelimit_msg.store(true, Ordering::Release);
                         }
                         _ => panic!("HTTP {}", resp.status()),
                     };
