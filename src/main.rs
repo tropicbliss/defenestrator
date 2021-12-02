@@ -16,7 +16,6 @@ async fn main() -> Result<()> {
     let available_names = executor::run(
         name_validity_data.valid_names,
         args.parallel_requests,
-        args.timeout,
     )
     .await
     .with_context(|| "Failed to run executor")?;

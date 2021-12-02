@@ -12,10 +12,6 @@ pub struct Opt {
     /// Set number of parallel requests
     #[structopt(short, long, default_value = "27")]
     pub parallel_requests: NonZeroUsize,
-
-    /// Set rate limit timeout
-    #[structopt(short, long, default_value = "200")]
-    pub timeout: u64,
 }
 
 impl Opt {

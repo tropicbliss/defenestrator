@@ -1,13 +1,13 @@
 [package]
 name = "defenestrator"
-version = "1.0.1"
+version = "1.0.0"
 edition = "2021"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 description = "Simple asynchronous and multithreaded Minecraft name availability checker"
 
 [dependencies]
-ansi_term = "0.12"
 anyhow = "1.0"
+console = "0.15"
 futures = "0.3"
 lazy_static = "1.4"
 regex = "1.5"
