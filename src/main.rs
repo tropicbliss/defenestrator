@@ -21,11 +21,11 @@ async fn main() -> Result<()> {
     .await
     .with_context(|| "Failed to run executor")?;
     writeln!(stdout())?;
-    writeln!(stdout(), "Available username(s): {:?}", available_names)?;
+    writeln!(stdout(), "Available name(s): {:?}", available_names)?;
     if !name_validity_data.invalid_names.is_empty() {
         writeln!(
             stdout(),
-            "Invalid username(s): {:?}",
+            "Invalid name(s): {:?}",
             name_validity_data.invalid_names
         )?;
     }
