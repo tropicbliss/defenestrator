@@ -7,7 +7,7 @@ use reqwest::Client;
 use std::{
     io::{stdout, Write},
     num::NonZeroUsize,
-    time::Instant
+    time::Instant,
 };
 
 pub async fn run(names: Vec<String>, parallel_requests: NonZeroUsize) -> Result<Vec<String>> {

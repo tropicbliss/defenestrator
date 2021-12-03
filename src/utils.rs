@@ -1,7 +1,13 @@
 use anyhow::Result;
+use console::style;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::{fs::read_to_string, path::Path, string::ToString};
+use std::{
+    fs::read_to_string,
+    io::{StdoutLock, Write},
+    path::Path,
+    string::ToString,
+};
 
 pub fn get_names(path: &Path) -> Result<Vec<String>> {
     let file = read_to_string(path)?;
@@ -12,20 +18,21 @@ pub fn get_names(path: &Path) -> Result<Vec<String>> {
         .collect())
 }
 
-pub fn get_name_validity(names: Vec<String>) -> NameValidityData {
+pub fn get_name_validity(handle: &mut StdoutLock, names: Vec<String>) -> Result<NameValidityData> {
     let mut invalid_names = Vec::new();
     let mut valid_names = Vec::new();
     for name in names {
         if is_invalid_predicate(&name) {
+            writeln!(handle, "{} is an invalid name", style(&name).yellow())?;
             invalid_names.push(name);
         } else {
             valid_names.push(name);
         }
     }
-    NameValidityData {
+    Ok(NameValidityData {
         valid_names,
         invalid_names,
-    }
+    })
 }
 
 fn is_invalid_predicate(name: &str) -> bool {
