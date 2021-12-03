@@ -11,6 +11,10 @@ console = "0.15"
 futures = "0.3"
 lazy_static = "1.4"
 regex = "1.5"
-reqwest = { version = "0.11", default_features = false, features = ["rustls-tls"] }
+reqwest = { version = "0.11", default_features = false, features = ["rustls-tls-native-roots"] }
 structopt = "0.3"
 tokio = { version = "1.14", features = ["full"] }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
