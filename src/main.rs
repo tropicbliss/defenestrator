@@ -17,9 +17,13 @@ async fn main() -> Result<()> {
         .with_context(|| format!("Failed to get names from {}", args.input.display()))?;
     let name_validity_data = utils::get_name_validity(&mut handle, names)
         .with_context(|| "Failed to get name validity data")?;
-    let available_names = executor::run(name_validity_data.valid_names, args.parallel_requests)
-        .await
-        .with_context(|| "Failed to run executor")?;
+    let available_names = executor::run(
+        &mut handle,
+        name_validity_data.valid_names,
+        args.parallel_requests,
+    )
+    .await
+    .with_context(|| "Failed to run executor")?;
     writeln!(handle)?;
     if available_names.is_empty() {
         writeln!(handle, "{}", style("No available names found").red())?;

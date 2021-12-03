@@ -5,12 +5,16 @@ use console::style;
 use futures::{stream, StreamExt};
 use reqwest::Client;
 use std::{
-    io::{stdout, Write},
+    io::{BufWriter, Stdout, Write},
     num::NonZeroUsize,
     time::Instant,
 };
 
-pub async fn run(names: Vec<String>, parallel_requests: NonZeroUsize) -> Result<Vec<String>> {
+pub async fn run(
+    handle: &mut BufWriter<Stdout>,
+    names: Vec<String>,
+    parallel_requests: NonZeroUsize,
+) -> Result<Vec<String>> {
     let client = Client::builder().build()?;
     let name_list_len = names.len();
     let before = Instant::now();
@@ -43,9 +47,9 @@ pub async fn run(names: Vec<String>, parallel_requests: NonZeroUsize) -> Result<
         .collect()
         .await;
     let elapsed = before.elapsed();
-    writeln!(stdout())?;
+    writeln!(handle)?;
     writeln!(
-        stdout(),
+        handle,
         "{:.11} {} | {} {} {} | {} requests",
         style(name_list_len as f64 / elapsed.as_secs_f64()).green(),
         style("rqs/sec (ESTIMATE)").cyan(),
