@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use std::{
     fs::read_to_string,
-    io::{stdout, Write},
+    io::{BufWriter, Stdout, Write},
     path::Path,
     string::ToString,
 };
@@ -18,18 +18,20 @@ pub fn get_names(path: &Path) -> Result<Vec<String>> {
         .collect())
 }
 
-pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
+pub fn get_name_validity(
+    handle: &mut BufWriter<Stdout>,
+    names: Vec<String>,
+) -> Result<NameValidityData> {
     let mut invalid_names = Vec::new();
     let mut valid_names = Vec::new();
     for name in names {
         if is_invalid_predicate(&name) {
-            writeln!(stdout(), "{} is an invalid name", style(&name).yellow())?;
+            writeln!(handle, "{} is an invalid name", style(&name).yellow())?;
             invalid_names.push(name);
         } else {
             valid_names.push(name);
         }
     }
-
     Ok(NameValidityData {
         valid_names,
         invalid_names,
