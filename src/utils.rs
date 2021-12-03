@@ -29,6 +29,7 @@ pub fn get_name_validity(handle: &mut StdoutLock, names: Vec<String>) -> Result<
             valid_names.push(name);
         }
     }
+
     Ok(NameValidityData {
         valid_names,
         invalid_names,
