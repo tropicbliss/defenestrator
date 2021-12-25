@@ -38,9 +38,9 @@ pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
 fn is_invalid_predicate(name: &str) -> bool {
     // Only alphanumeric + underscore characters allowed
     lazy_static! {
-        static ref RE: Regex = Regex::new("[^a-zA-Z0-9_.]").unwrap();
+        static ref RE: Regex = Regex::new("[A-Za-z0-9_]+").unwrap();
     }
-    name.len() < 3 || name.len() > 16 || RE.is_match(name)
+    name.len() < 3 || name.len() > 16 || !RE.is_match(name)
 }
 
 pub struct NameValidityData {
