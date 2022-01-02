@@ -11,11 +11,13 @@ use std::{
 
 pub fn get_names(path: &Path) -> Result<Vec<String>> {
     let file = read_to_string(path)?;
-    Ok(file
+    let mut result: Vec<_> = file
         .lines()
         .map(str::trim)
         .map(ToString::to_string)
-        .collect())
+        .collect();
+    result.dedup();
+    Ok(result)
 }
 
 pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
