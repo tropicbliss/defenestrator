@@ -43,6 +43,13 @@ pub async fn run(names: Vec<String>, parallel_requests: NonZeroUsize) -> Result<
         .collect()
         .await;
     let elapsed = before.elapsed();
+    let mut available_names = Vec::new();
+    for body in bodies {
+        let body = body?;
+        if let NameResult::Available(name) = body {
+            available_names.push(name);
+        }
+    }
     writeln!(stdout())?;
     writeln!(
         stdout(),
@@ -54,13 +61,6 @@ pub async fn run(names: Vec<String>, parallel_requests: NonZeroUsize) -> Result<
         style("seconds").cyan(),
         name_list_len
     )?;
-    let mut available_names = Vec::new();
-    for body in bodies {
-        let body = body?;
-        if let NameResult::Available(name) = body {
-            available_names.push(name);
-        }
-    }
     Ok(available_names)
 }
 
