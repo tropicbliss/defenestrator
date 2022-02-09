@@ -24,12 +24,14 @@ pub async fn run(
     tokio::spawn(async move {
         let mut state = MsgState::Unlocked;
         while let Ok(item) = rx.recv() {
-            if item == MsgState::Locked && state == MsgState::Unlocked {
-                state = MsgState::Locked;
-                println!(
-                    "Request rate limited, waiting {} seconds before reattempting...",
-                    delay
-                );
+            if state == MsgState::Unlocked {
+                if let MsgState::Locking(delay) = item {
+                    state = MsgState::Locked;
+                    println!(
+                        "Request rate limited, waiting {} seconds before reattempting...",
+                        delay
+                    );
+                }
             }
             if item == MsgState::Unlocked && state == MsgState::Locked {
                 state = MsgState::Unlocked;
@@ -63,16 +65,16 @@ pub async fn run(
                             break NameResult::Available(name);
                         }
                         429 => {
-                            tx.send(MsgState::Locked).unwrap();
-                            let end_time = Instant::now();
-                            let mut start_time_now = Instant::now();
+                            let mut start_time_m = Instant::now();
                             {
                                 let mut start_time = start_time.lock();
-                                std::mem::swap(&mut start_time_now, &mut start_time);
+                                std::mem::swap(&mut start_time_m, &mut start_time);
                             }
+                            let end_time = Instant::now();
                             let time_to_wait = Duration::from_secs(delay)
-                                .checked_sub(end_time - start_time_now)
+                                .checked_sub(end_time - start_time_m)
                                 .unwrap_or(Duration::ZERO);
+                            tx.send(MsgState::Locking(time_to_wait.as_secs())).unwrap();
                             sleep(time_to_wait).await;
                             tx.send(MsgState::Unlocked).unwrap();
                         }
@@ -98,6 +100,7 @@ pub async fn run(
 
 #[derive(PartialEq)]
 enum MsgState {
+    Locking(u64),
     Locked,
     Unlocked,
     Exit,
