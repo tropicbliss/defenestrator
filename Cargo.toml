@@ -12,5 +12,9 @@ clap = { version = "3.0.14", features = ["derive"] }
 futures = "0.3.21"
 lazy_static = "1.4.0"
 regex = "1.5.4"
-reqwest = { version = "0.11.9", default_features = false, features = ["rustls-tls"] }
+reqwest = { version = "0.11.9", default_features = false, features = ["rustls-tls-native-roots"] }
 tokio = { version = "1.16.1", features = ["full"] }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
