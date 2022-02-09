@@ -8,7 +8,7 @@ use std::{sync::mpsc, time::Duration};
 use tokio::time::sleep;
 
 pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Result<Vec<String>> {
-    let client = Client::builder().build()?;
+    let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
     let (tx, rx) = mpsc::channel();
     tokio::spawn(async move {
         let mut state = 0;
