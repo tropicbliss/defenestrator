@@ -1,6 +1,6 @@
 Simple asynchronous and multithreaded Minecraft name availability checker. Name checking on steroids.
 
-Download [here](https://github.com/tropicbliss/defenestrator/releases/tag/v1.0.0).
+Download [here](https://github.com/tropicbliss/defenestrator/releases/latest).
 
 ## Usage
 
