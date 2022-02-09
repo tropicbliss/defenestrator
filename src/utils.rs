@@ -1,5 +1,5 @@
+use ansi_term::Colour::Yellow;
 use anyhow::Result;
-use console::style;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::{
@@ -25,7 +25,7 @@ pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
     let mut valid_names = Vec::new();
     for name in names {
         if is_invalid_predicate(&name) {
-            writeln!(stdout(), "{} is an invalid name", style(&name).yellow())?;
+            writeln!(stdout(), "{} is an invalid name", Yellow.paint(&name))?;
             invalid_names.push(name);
         } else {
             valid_names.push(name);

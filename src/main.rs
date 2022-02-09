@@ -4,8 +4,8 @@ mod cli;
 mod executor;
 mod utils;
 
+use ansi_term::Colour::Red;
 use anyhow::{Context, Result};
-use console::style;
 use std::io::{stdout, Write};
 
 #[tokio::main]
@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
     .context("Failed to run executor")?;
     writeln!(stdout())?;
     if available_names.is_empty() {
-        writeln!(stdout(), "{}", style("No available names found").red())?;
+        writeln!(stdout(), "{}", Red.paint("No available names found"))?;
     } else {
         writeln!(stdout(), "Available name(s): {:?}", available_names)?;
     }

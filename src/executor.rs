@@ -1,12 +1,11 @@
 #![allow(clippy::cast_precision_loss)]
 
+use ansi_term::Colour::Yellow;
 use anyhow::Result;
-use console::style;
 use futures::{stream, StreamExt};
 use parking_lot::Mutex;
 use reqwest::Client;
 use std::{
-    io::{stdout, Write},
     num::NonZeroUsize,
     sync::{mpsc, Arc},
     time::{Duration, Instant},
@@ -19,8 +18,6 @@ pub async fn run(
     delay: u64,
 ) -> Result<Vec<String>> {
     let client = Client::builder().build()?;
-    let name_list_len = names.len();
-    let before = Instant::now();
     let (tx, rx) = mpsc::channel();
     let start_time = Instant::now();
     let start_time = Arc::new(Mutex::new(start_time));
@@ -58,11 +55,11 @@ pub async fn run(
                         .expect("Error while sending request");
                     match resp.status().as_u16() {
                         200 => {
-                            println!("{} was taken", style(name).yellow());
+                            println!("{} was taken", Yellow.paint(name));
                             break NameResult::Taken;
                         }
                         204 => {
-                            println!("{} is available", style(&name).yellow());
+                            println!("{} is available", Yellow.paint(&name));
                             break NameResult::Available(name);
                         }
                         429 => {
@@ -88,7 +85,6 @@ pub async fn run(
         .buffer_unordered(usize::from(parallel_requests))
         .collect()
         .await;
-    let elapsed = before.elapsed();
     tx.send(MsgState::Exit)?;
     let mut available_names = Vec::new();
     for body in bodies {
@@ -97,17 +93,6 @@ pub async fn run(
             available_names.push(name);
         }
     }
-    writeln!(stdout())?;
-    writeln!(
-        stdout(),
-        "{:.11} {} | {} {} {} | {} requests",
-        style(name_list_len as f64 / elapsed.as_secs_f64()).green(),
-        style("rqs/sec (ESTIMATE)").cyan(),
-        style("Took").cyan(),
-        elapsed.as_secs_f32(),
-        style("seconds").cyan(),
-        name_list_len
-    )?;
     Ok(available_names)
 }
 

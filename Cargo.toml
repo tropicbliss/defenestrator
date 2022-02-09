@@ -6,9 +6,9 @@ authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 description = "Simple asynchronous and multithreaded Minecraft name availability checker"
 
 [dependencies]
+ansi_term = "0.12.1"
 anyhow = "1.0.53"
 clap = { version = "3.0.14", features = ["derive"] }
-console = "0.15.0"
 futures = "0.3.21"
 lazy_static = "1.4.0"
 parking_lot = "0.12.0"
