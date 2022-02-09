@@ -12,7 +12,7 @@ pub struct Args {
     #[clap(short, long, default_value = "27")]
     parallel_requests: NonZeroUsize,
 
-    /// Base rate limit delay in seconds
+    /// Rate limit delay in seconds
     #[clap(short, long, default_value = "200")]
     pub delay: u64,
 }
