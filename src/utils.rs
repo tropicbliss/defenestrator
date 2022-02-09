@@ -16,7 +16,7 @@ pub fn get_names(path: &Path) -> Result<Vec<String>> {
         .map(str::trim)
         .map(ToString::to_string)
         .collect();
-    result.dedup();
+    true_dedup(&mut result);
     Ok(result)
 }
 
@@ -48,4 +48,12 @@ fn is_invalid_predicate(name: &str) -> bool {
 pub struct NameValidityData {
     pub valid_names: Vec<String>,
     pub invalid_names: Vec<String>,
+}
+
+pub fn true_dedup<T>(vec: &mut Vec<T>)
+where
+    T: Ord,
+{
+    vec.sort_unstable();
+    vec.dedup();
 }
