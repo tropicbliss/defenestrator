@@ -6,35 +6,28 @@ use futures::{stream, StreamExt};
 use parking_lot::Mutex;
 use reqwest::Client;
 use std::{
-    num::NonZeroUsize,
     sync::{mpsc, Arc},
     time::{Duration, Instant},
 };
 use tokio::time::sleep;
 
-pub async fn run(
-    names: Vec<String>,
-    parallel_requests: NonZeroUsize,
-    delay: u64,
-) -> Result<Vec<String>> {
+pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Result<Vec<String>> {
     let client = Client::builder().build()?;
     let (tx, rx) = mpsc::channel();
     let start_time = Instant::now();
     let start_time = Arc::new(Mutex::new(start_time));
     tokio::spawn(async move {
-        let mut state = MsgState::Unlocked;
+        let mut state = 0;
         while let Ok(item) = rx.recv() {
-            if state == MsgState::Unlocked {
-                if let MsgState::Locking(delay) = item {
-                    state = MsgState::Locked;
+            if let MsgState::Locking(delay) = item {
+                state += 1;
+                if state == parallel_requests {
+                    state = 0;
                     println!(
-                        "Request rate limited, waiting {} seconds before reattempting...",
+                        "Requests rate limited, waiting {} seconds before reattempting...",
                         delay
                     );
                 }
-            }
-            if item == MsgState::Unlocked && state == MsgState::Locked {
-                state = MsgState::Unlocked;
             }
             if item == MsgState::Exit {
                 break;
@@ -76,7 +69,6 @@ pub async fn run(
                                 .unwrap_or(Duration::ZERO);
                             tx.send(MsgState::Locking(time_to_wait.as_secs())).unwrap();
                             sleep(time_to_wait).await;
-                            tx.send(MsgState::Unlocked).unwrap();
                         }
                         _ => panic!("HTTP {}", resp.status()),
                     }
@@ -84,7 +76,7 @@ pub async fn run(
             })
         })
         // Limiting concurrency to prevent OS from running out of resources
-        .buffer_unordered(usize::from(parallel_requests))
+        .buffer_unordered(parallel_requests)
         .collect()
         .await;
     tx.send(MsgState::Exit)?;
@@ -101,8 +93,6 @@ pub async fn run(
 #[derive(PartialEq)]
 enum MsgState {
     Locking(u64),
-    Locked,
-    Unlocked,
     Exit,
 }
 

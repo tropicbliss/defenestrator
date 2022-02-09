@@ -10,7 +10,7 @@ pub struct Args {
 
     /// Number of parallel requests
     #[clap(short, long, default_value = "27")]
-    pub parallel_requests: NonZeroUsize,
+    parallel_requests: NonZeroUsize,
 
     /// Base rate limit delay in seconds
     #[clap(short, long, default_value = "200")]
@@ -20,5 +20,9 @@ pub struct Args {
 impl Args {
     pub fn new() -> Self {
         Self::parse()
+    }
+
+    pub fn get_parallel_requests(&self) -> usize {
+        self.parallel_requests.into()
     }
 }

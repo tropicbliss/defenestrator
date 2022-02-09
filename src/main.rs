@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
         utils::get_name_validity(names).context("Failed to get name validity data")?;
     let available_names = executor::run(
         name_validity_data.valid_names,
-        args.parallel_requests,
+        args.get_parallel_requests(),
         args.delay,
     )
     .await
