@@ -6,7 +6,7 @@ use futures::{stream, StreamExt};
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
-use std::{sync::mpsc, time::Duration};
+use std::{collections::HashSet, sync::mpsc, time::Duration};
 use tokio::time::sleep;
 
 pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Result<Vec<String>> {
@@ -30,7 +30,12 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
             }
         }
     });
-    let bodies: Vec<_> = stream::iter(names.chunks(10).map(Into::into).collect::<Vec<Vec<_>>>())
+    let names: Vec<HashSet<String>> = names
+        .chunks(10)
+        .map(Vec::from)
+        .map(HashSet::from_iter)
+        .collect();
+    let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
             // Client has its own internal Arc impl so each clone is just cloning a reference to it
             let client = client.clone();
@@ -47,12 +52,17 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                     match resp.status().as_u16() {
                         200 => {
                             let result: Vec<Unit> = resp.json().await.unwrap();
-                            let result: Vec<String> =
+                            let result: HashSet<String> =
                                 result.into_iter().map(|unit| unit.name).collect();
+                            let available_names: Vec<String> =
+                                name.symmetric_difference(&result).map(Into::into).collect();
                             for name in &result {
                                 println!("{} was taken", Yellow.paint(name));
                             }
-                            break result;
+                            for name in &available_names {
+                                println!("{} is available", Yellow.paint(name));
+                            }
+                            break available_names;
                         }
                         429 => {
                             tx.send(MsgState::Locking).unwrap();
