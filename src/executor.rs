@@ -4,6 +4,8 @@ use ansi_term::Colour::Yellow;
 use anyhow::Result;
 use futures::{stream, StreamExt};
 use reqwest::Client;
+use serde::Deserialize;
+use serde_json::json;
 use std::{sync::mpsc, time::Duration};
 use tokio::time::sleep;
 
@@ -28,48 +30,53 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
             }
         }
     });
-    let bodies: Vec<_> = stream::iter(names)
-        .map(|name| {
-            let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", name);
-            // Client has its own internal Arc impl so each clone is just cloning a reference to it
-            let client = client.clone();
-            let tx = tx.clone();
-            tokio::spawn(async move {
-                loop {
-                    let resp = client
-                        .get(&url)
-                        .send()
-                        .await
-                        .expect("Error while sending request");
-                    match resp.status().as_u16() {
-                        200 => {
+    let bodies: Vec<_> = stream::iter(
+        names
+            .chunks(10)
+            .map(Into::into)
+            .collect::<Vec<Vec<String>>>(),
+    )
+    .map(|name| {
+        // Client has its own internal Arc impl so each clone is just cloning a reference to it
+        let client = client.clone();
+        let tx = tx.clone();
+        tokio::spawn(async move {
+            loop {
+                let json = json!(name);
+                let resp = client
+                    .post("https://api.mojang.com/profiles/minecraft")
+                    .json(&json)
+                    .send()
+                    .await
+                    .expect("Error while sending request");
+                match resp.status().as_u16() {
+                    200 => {
+                        let result: [Unit; 10] = resp.json().await.unwrap();
+                        let result: Vec<String> =
+                            result.into_iter().map(|unit| unit.name).collect();
+                        for name in &result {
                             println!("{} was taken", Yellow.paint(name));
-                            break NameResult::Taken;
                         }
-                        204 => {
-                            println!("{} is available", Yellow.paint(&name));
-                            break NameResult::Available(name);
-                        }
-                        429 => {
-                            tx.send(MsgState::Locking).unwrap();
-                            sleep(Duration::from_secs(delay)).await;
-                        }
-                        _ => panic!("HTTP {}", resp.status()),
+                        break result;
                     }
+                    429 => {
+                        tx.send(MsgState::Locking).unwrap();
+                        sleep(Duration::from_secs(delay)).await;
+                    }
+                    _ => panic!("HTTP {}", resp.status()),
                 }
-            })
+            }
         })
-        // Limiting concurrency to prevent OS from running out of resources
-        .buffer_unordered(parallel_requests)
-        .collect()
-        .await;
+    })
+    // Limiting concurrency to prevent OS from running out of resources
+    .buffer_unordered(parallel_requests)
+    .collect()
+    .await;
     tx.send(MsgState::Exit)?;
     let mut available_names = Vec::new();
     for body in bodies {
         let body = body?;
-        if let NameResult::Available(name) = body {
-            available_names.push(name);
-        }
+        available_names.extend(body);
     }
     Ok(available_names)
 }
@@ -80,7 +87,7 @@ enum MsgState {
     Exit,
 }
 
-enum NameResult {
-    Available(String),
-    Taken,
+#[derive(Deserialize)]
+struct Unit {
+    name: String,
 }
