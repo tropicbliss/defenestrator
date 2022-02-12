@@ -33,7 +33,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
     });
     let names: Vec<HashSet<String>> = names
         .chunks(10)
-        .map(|name| name.iter().map(|n| utils::to_title(n)).collect::<Vec<_>>())
+        .map(|name| name.iter().map(|n| utils::to_title(n)))
         .map(HashSet::from_iter)
         .collect();
     let bodies: Vec<_> = stream::iter(names)
