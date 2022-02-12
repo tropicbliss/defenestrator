@@ -60,12 +60,7 @@ where
 
 pub fn to_title(s: &str) -> String {
     let mut c = s.chars();
-    match c.next() {
-        None => String::new(),
-        Some(f) => {
-            let mut word = f.to_uppercase().collect::<String>();
-            word.push_str(&c.map(|l| l.to_ascii_lowercase()).collect::<String>());
-            word
-        }
-    }
+    let mut word = c.next().unwrap().to_ascii_uppercase().to_string();
+    word.push_str(&c.map(|l| l.to_ascii_lowercase()).collect::<String>());
+    word
 }
