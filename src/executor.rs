@@ -1,5 +1,6 @@
 #![allow(clippy::cast_precision_loss)]
 
+use crate::utils;
 use ansi_term::Colour::Yellow;
 use anyhow::Result;
 use futures::{stream, StreamExt};
@@ -32,11 +33,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
     });
     let names: Vec<HashSet<String>> = names
         .chunks(10)
-        .map(|name| {
-            name.iter()
-                .map(|n| n.to_ascii_lowercase())
-                .collect::<Vec<_>>()
-        })
+        .map(|name| name.iter().map(|n| utils::to_title(n)).collect::<Vec<_>>())
         .map(HashSet::from_iter)
         .collect();
     let bodies: Vec<_> = stream::iter(names)
@@ -58,7 +55,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                             let result: Vec<Unit> = resp.json().await.unwrap();
                             let result: HashSet<String> = result
                                 .into_iter()
-                                .map(|unit| unit.name.to_ascii_lowercase())
+                                .map(|unit| utils::to_title(&unit.name))
                                 .collect();
                             for name in &result {
                                 println!("{} was taken", Yellow.paint(name));
