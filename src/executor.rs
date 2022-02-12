@@ -51,7 +51,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                     .expect("Error while sending request");
                 match resp.status().as_u16() {
                     200 => {
-                        let result: [Unit; 10] = resp.json().await.unwrap();
+                        let result: Vec<Unit> = resp.json().await.unwrap();
                         let result: Vec<String> =
                             result.into_iter().map(|unit| unit.name).collect();
                         for name in &result {
