@@ -54,11 +54,11 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                             let result: Vec<Unit> = resp.json().await.unwrap();
                             let result: HashSet<String> =
                                 result.into_iter().map(|unit| unit.name).collect();
-                            let available_names: Vec<String> =
-                                name.symmetric_difference(&result).map(Into::into).collect();
                             for name in &result {
                                 println!("{} was taken", Yellow.paint(name));
                             }
+                            let available_names: Vec<String> =
+                                name.symmetric_difference(&result).cloned().collect();
                             for name in &available_names {
                                 println!("{} is available", Yellow.paint(name));
                             }
