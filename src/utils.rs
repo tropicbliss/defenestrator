@@ -62,6 +62,10 @@ pub fn to_title(s: &str) -> String {
     let mut c = s.chars();
     match c.next() {
         None => String::new(),
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+        Some(f) => {
+            let mut word = f.to_uppercase().collect::<String>();
+            word.push_str(&c.as_str().to_ascii_lowercase());
+            word
+        }
     }
 }
