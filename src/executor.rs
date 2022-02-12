@@ -61,7 +61,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                                 println!("{} was taken", Yellow.paint(name));
                             }
                             let available_names: Vec<String> =
-                                name.symmetric_difference(&result).cloned().collect();
+                                name.difference(&result).cloned().collect();
                             for name in &available_names {
                                 println!("{} is available", Yellow.paint(name));
                             }
