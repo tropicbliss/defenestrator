@@ -61,6 +61,6 @@ where
 pub fn to_title(s: &str) -> String {
     let mut c = s.chars();
     let mut word = c.next().unwrap().to_ascii_uppercase().to_string();
-    word.push_str(&c.map(|l| l.to_ascii_lowercase()).collect::<String>());
+    word.push_str(&c.as_str().to_ascii_lowercase());
     word
 }
