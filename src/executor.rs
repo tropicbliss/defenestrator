@@ -1,5 +1,3 @@
-#![allow(clippy::cast_precision_loss)]
-
 use crate::utils;
 use ansi_term::Colour::Yellow;
 use anyhow::Result;
