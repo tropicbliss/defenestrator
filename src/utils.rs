@@ -37,7 +37,7 @@ pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
 
 fn is_valid_predicate(name: &str) -> bool {
     // Only alphanumeric + underscore characters allowed
-    name.len() >= 3 || name.len() <= 16 || name.chars().all(|c| c.is_alphanumeric() || c == '_')
+    name.len() >= 3 && name.len() <= 16 && name.chars().all(|c| c.is_alphanumeric() || c == '_')
 }
 
 pub struct NameValidityData {
