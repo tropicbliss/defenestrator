@@ -1,7 +1,5 @@
 use ansi_term::Colour::Yellow;
 use anyhow::Result;
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::{
     fs::read_to_string,
     io::{stdout, Write},
@@ -24,11 +22,11 @@ pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
     let mut invalid_names = Vec::new();
     let mut valid_names = Vec::new();
     for name in names {
-        if is_invalid_predicate(&name) {
+        if is_valid_predicate(&name) {
+            valid_names.push(name);
+        } else {
             writeln!(stdout(), "{} is an invalid name", Yellow.paint(&name))?;
             invalid_names.push(name);
-        } else {
-            valid_names.push(name);
         }
     }
     Ok(NameValidityData {
@@ -37,12 +35,9 @@ pub fn get_name_validity(names: Vec<String>) -> Result<NameValidityData> {
     })
 }
 
-fn is_invalid_predicate(name: &str) -> bool {
+fn is_valid_predicate(name: &str) -> bool {
     // Only alphanumeric + underscore characters allowed
-    lazy_static! {
-        static ref RE: Regex = Regex::new("[A-Za-z0-9_]+").unwrap();
-    }
-    name.len() < 3 || name.len() > 16 || !RE.is_match(name)
+    name.len() >= 3 || name.len() <= 16 || name.chars().all(|c| c.is_alphanumeric() || c == '_')
 }
 
 pub struct NameValidityData {

@@ -81,8 +81,8 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
     tx.send(MsgState::Exit)?;
     let mut available_names = Vec::new();
     for body in bodies {
-        let body = body?;
-        available_names.extend(body);
+        let mut body = body?;
+        available_names.append(&mut body);
     }
     Ok(available_names)
 }
