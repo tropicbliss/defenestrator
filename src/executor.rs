@@ -11,10 +11,10 @@ use tokio::time::sleep;
 pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Result<Vec<String>> {
     let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
     let (tx, rx) = mpsc::channel();
-    tokio::spawn(async move {
+    let aux_channel = tokio::spawn(async move {
         let mut state = 0;
         while let Ok(item) = rx.recv() {
-            if item == MsgState::Locking {
+            if item == MsgState::RateLimited {
                 state += 1;
                 if state == parallel_requests {
                     state = 0;
@@ -23,9 +23,6 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                         delay
                     );
                 }
-            }
-            if item == MsgState::Exit {
-                break;
             }
         }
     });
@@ -66,7 +63,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                             break available_names;
                         }
                         429 => {
-                            tx.send(MsgState::Locking).unwrap();
+                            tx.send(MsgState::RateLimited).unwrap();
                             sleep(Duration::from_secs(delay)).await;
                         }
                         _ => panic!("HTTP {}", resp.status()),
@@ -78,7 +75,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
         .buffer_unordered(parallel_requests)
         .collect()
         .await;
-    tx.send(MsgState::Exit)?;
+    aux_channel.abort();
     let mut available_names = Vec::new();
     for body in bodies {
         let mut body = body?;
@@ -89,8 +86,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
 
 #[derive(PartialEq)]
 enum MsgState {
-    Locking,
-    Exit,
+    RateLimited,
 }
 
 #[derive(Deserialize)]
