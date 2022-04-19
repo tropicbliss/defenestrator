@@ -1,6 +1,6 @@
 [package]
 name = "defenestrator"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 description = "Simple asynchronous and multithreaded Minecraft name availability checker"
