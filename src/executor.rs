@@ -48,19 +48,22 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                     match resp.status().as_u16() {
                         200 => {
                             let result: Vec<Unit> = resp.json().await.unwrap();
-                            let result: HashSet<String> = result
-                                .into_iter()
-                                .map(|unit| utils::to_title(&unit.name))
-                                .collect();
-                            for name in &result {
-                                println!("{} was taken", Yellow.paint(name));
-                            }
-                            let available_names: Vec<String> =
-                                name.difference(&result).cloned().collect();
-                            for name in &available_names {
-                                println!("{} is available", Yellow.paint(name));
-                            }
-                            break available_names;
+                            let blocked_handle = tokio::task::spawn_blocking(move || {
+                                let result: HashSet<String> = result
+                                    .into_iter()
+                                    .map(|unit| utils::to_title(&unit.name))
+                                    .collect();
+                                for name in &result {
+                                    println!("{} was taken", Yellow.paint(name));
+                                }
+                                let available_names: Vec<String> =
+                                    name.difference(&result).cloned().collect();
+                                for name in &available_names {
+                                    println!("{} is available", Yellow.paint(name));
+                                }
+                                available_names
+                            });
+                            return blocked_handle.await.unwrap();
                         }
                         429 => {
                             tx.send(MsgState::RateLimited).unwrap();
