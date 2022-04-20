@@ -38,5 +38,6 @@ async fn main() -> Result<()> {
             name_validity_data.invalid_names
         )?;
     }
+    handle.flush()?;
     Ok(())
 }
