@@ -8,14 +8,19 @@ use serde_json::json;
 use std::{
     collections::HashSet,
     io::{self, Write},
+    num::NonZeroUsize,
     time::Duration,
 };
-use tokio::sync::mpsc;
-use tokio::time::sleep;
+use tokio::{sync::mpsc, time::sleep};
 
-pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Result<Vec<String>> {
+pub async fn run(
+    names: Vec<String>,
+    parallel_requests: NonZeroUsize,
+    delay: u64,
+) -> Result<Vec<String>> {
     let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
     let (tx, mut rx) = mpsc::channel(100);
+    let parallel_requests = usize::from(parallel_requests);
     let aux_channel = tokio::spawn(async move {
         let mut state = 0;
         while let Some(item) = rx.recv().await {
