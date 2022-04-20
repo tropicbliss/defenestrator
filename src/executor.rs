@@ -5,15 +5,20 @@ use futures::{stream, StreamExt};
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
-use std::{collections::HashSet, sync::mpsc, time::Duration};
+use std::{
+    collections::HashSet,
+    io::{self, Write},
+    time::Duration,
+};
+use tokio::sync::mpsc;
 use tokio::time::sleep;
 
 pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Result<Vec<String>> {
     let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
-    let (tx, rx) = mpsc::channel();
+    let (tx, mut rx) = mpsc::channel(100);
     let aux_channel = tokio::spawn(async move {
         let mut state = 0;
-        while let Ok(item) = rx.recv() {
+        while let Some(item) = rx.recv().await {
             if item == MsgState::RateLimited {
                 state += 1;
                 if state == parallel_requests {
@@ -49,24 +54,29 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
                         200 => {
                             let result: Vec<Unit> = resp.json().await.unwrap();
                             let blocked_handle = tokio::task::spawn_blocking(move || {
+                                let stdout = io::stdout();
+                                let handle = stdout.lock();
+                                let mut handle = io::BufWriter::new(handle);
                                 let result: HashSet<String> = result
                                     .into_iter()
                                     .map(|unit| utils::to_title(&unit.name))
                                     .collect();
                                 for name in &result {
-                                    println!("{} was taken", Yellow.paint(name));
+                                    writeln!(handle, "{} was taken", Yellow.paint(name)).unwrap();
                                 }
                                 let available_names: Vec<String> =
                                     name.difference(&result).cloned().collect();
                                 for name in &available_names {
-                                    println!("{} is available", Yellow.paint(name));
+                                    writeln!(handle, "{} is available", Yellow.paint(name))
+                                        .unwrap();
                                 }
+                                handle.flush().unwrap();
                                 available_names
                             });
                             return blocked_handle.await.unwrap();
                         }
                         429 => {
-                            tx.send(MsgState::RateLimited).unwrap();
+                            tx.send(MsgState::RateLimited).await.unwrap();
                             sleep(Duration::from_secs(delay)).await;
                         }
                         _ => panic!("HTTP {}", resp.status()),
@@ -87,7 +97,7 @@ pub async fn run(names: Vec<String>, parallel_requests: usize, delay: u64) -> Re
     Ok(available_names)
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 enum MsgState {
     RateLimited,
 }

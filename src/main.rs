@@ -6,7 +6,7 @@ mod utils;
 
 use ansi_term::Colour::Red;
 use anyhow::{Context, Result};
-use std::io::{stdout, Write};
+use std::io::{self, Write};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -22,15 +22,18 @@ async fn main() -> Result<()> {
     )
     .await
     .context("Failed to run executor")?;
-    writeln!(stdout())?;
+    let stdout = io::stdout();
+    let handle = stdout.lock();
+    let mut handle = io::BufWriter::new(handle);
+    writeln!(handle)?;
     if available_names.is_empty() {
-        writeln!(stdout(), "{}", Red.paint("No available names found"))?;
+        writeln!(handle, "{}", Red.paint("No available names found"))?;
     } else {
-        writeln!(stdout(), "Available name(s): {:?}", available_names)?;
+        writeln!(handle, "Available name(s): {:?}", available_names)?;
     }
     if !name_validity_data.invalid_names.is_empty() {
         writeln!(
-            stdout(),
+            handle,
             "Invalid name(s): {:?}",
             name_validity_data.invalid_names
         )?;
