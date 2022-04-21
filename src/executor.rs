@@ -19,8 +19,8 @@ pub async fn run(
     delay: u64,
 ) -> Result<Vec<String>> {
     let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
-    let (tx, mut rx) = mpsc::channel(100);
     let parallel_requests = usize::from(parallel_requests);
+    let (tx, mut rx) = mpsc::channel(parallel_requests);
     let aux_channel = tokio::spawn(async move {
         let mut state = 0;
         while let Some(item) = rx.recv().await {
