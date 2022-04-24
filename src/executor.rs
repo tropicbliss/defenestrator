@@ -44,9 +44,9 @@ pub async fn run(
     let bodies: Vec<_> = stream::iter(names)
         .map(|name| {
             // Client has its own internal Arc impl so each clone is just cloning a reference to it
-            let client = client.clone();
+            let client = &client;
             let tx = tx.clone();
-            tokio::spawn(async move {
+            async move {
                 loop {
                     let json = json!(name);
                     let resp = client
@@ -87,7 +87,7 @@ pub async fn run(
                         _ => panic!("HTTP {}", resp.status()),
                     }
                 }
-            })
+            }
         })
         // Limiting concurrency to prevent OS from running out of resources
         .buffer_unordered(parallel_requests)
@@ -95,8 +95,7 @@ pub async fn run(
         .await;
     aux_channel.abort();
     let mut available_names = Vec::new();
-    for body in bodies {
-        let mut body = body?;
+    for mut body in bodies {
         available_names.append(&mut body);
     }
     Ok(available_names)
